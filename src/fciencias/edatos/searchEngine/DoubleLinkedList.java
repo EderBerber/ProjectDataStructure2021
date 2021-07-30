@@ -2,8 +2,8 @@ package fciencias.edatos.searchEngine;
 import java.util.Iterator;
 /**
  * Programa que implementa una lista doblemente ligada
- * @author Esaú Martínez Pardo
- * @author Eder Samuel Berber Gutiérrez
+ * @author Berber Gutiérrez Eder Samuel
+ * @author Martínez Pardo Esaú
  * @version 1.0 Julio 2021
  * @ since proyecto final, Estructuras de Datos 2021-2
  */ 

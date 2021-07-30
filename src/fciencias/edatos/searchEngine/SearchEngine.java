@@ -6,9 +6,9 @@ import java.lang.Math;
 
 /**
  * Programa que simula un motor de búsqueda
- * @author Esaú Martínez Pardo
- * @author Eder Samuel Berber Gutiérrez
- * @version 1.0 Julio 2021
+ * @author Berber Gutiérrez Eder Samuel
+ * @author Martínez Pardo Esaú
+ * @version 2.0 Julio 2021
  * @since proyecto final, Estructuras de Datos 2021-2
  */
 public class SearchEngine<T> extends DoubleLinkedList<T>{

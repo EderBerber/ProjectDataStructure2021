@@ -7,6 +7,9 @@ package fciencias.edatos.searchEngine;
  * @since Estructuras de Datos 2021-2
  */
  public class AVL<K extends Comparable, T> extends BinarySearchTree<K, T>{
+
+ 	/*Raíz del árbol*/
+ 	BinaryNode root;
  	
  	/**
  	 * Regresa la altura de un nodo.
@@ -20,7 +23,12 @@ package fciencias.edatos.searchEngine;
  		// Caso para hojas
  		if(node.right==null && node.left==null)
  			return 0;
- 		//ACABAR
+ 		
+ 		/*El valor máximo de sus hijos*/
+ 		int max = node.left.alturaNodo > node.right.alturaNodo ? node.left.alturaNodo : node.right.alturaNodo;
+
+ 		return max + 1;
+
 
  	}
 
@@ -29,8 +37,9 @@ package fciencias.edatos.searchEngine;
  	 * @param actual el nodo a partir del cual será rebalanceado si es necesario.
  	 */
  	private void rebalancea(BinaryNode actual){
- 		int hi = altura(actual.left);
- 		int hd = altura(actual.right);
+ 		actual.alturaNodo = altura(actual);
+ 		int hi = actual.left.alturaNodo;
+ 		int hd = actual.right.alturaNodo;
 
  		//Obtenemos el valor absoluto
  		int valor = hi-hd;
@@ -38,10 +47,16 @@ package fciencias.edatos.searchEngine;
 
  		// Analizando el caso cuando debemos de rebalancear.
  		if(valor >= 2){
- 			if(hi > hd)
- 				desbalance(actual, true);
- 			else
+ 			if(hi > hd){
  				desbalance(actual, false);
+ 				rebalancea(actual.parent);
+ 			}
+
+ 			else{
+ 				desbalance(actual, true);
+ 				rebalancea(actual.parent);
+ 			}
+
  		}
 
  		//Caso base, cuando el nodo es la raíz
@@ -56,27 +71,148 @@ package fciencias.edatos.searchEngine;
  	/**
  	 * Rebalancea a partir de un subárbol.
  	 * @param node el nodo a rebalancear.
- 	 * @param side el lado a rebalancear. if true -> derecha, if false -> izquierda.
+ 	 * @param side el lado a rebalancear: if true -> derecha / if false -> izquierda
  	 */
  	public void desbalance(BinaryNode node, Boolean side){
- 		//AHORITA LO HAGO
+ 		int wi = node.left.left.alturaNodo;
+ 		int wd = node.right.right.alturaNodo;
+
+ 		if(side){	//Si es true, entonces vamos a rebalancear a la derecha.
+ 			if(wd == (node.left.alturaNodo)+1){
+ 				rotaDerecha(node);
+ 			}
+ 			if(wd == node.left.alturaNodo){
+ 				rotaIzquierda(node.right);
+ 				rotaDerecha(node);
+ 			}
+ 		}
+ 		if(!side){	//Si es false, entonces vamos a rebalancear a la izquierda.
+ 			if(wi == ((node.right.alturaNodo)+1)){
+ 				rotaIzquierda(node);
+ 			}
+ 			if(wi == (node.right.alturaNodo)){
+ 				rotaDerecha(node.left);
+ 				rotaIzquierda(node);
+ 			}
+ 		}
  	}
 
+ 	/**
+ 	 * Método auxiliar que rebalancea a la derecha, en el caso1. El nodo que le pasamos va a rotar a la izquierda.
+ 	 * @param node el nodo a rotar hacia la derecha.
+ 	 */
+ 	public void rotaDerecha(BinaryNode node){
+ 		if(node.parent != null){
 
+ 			BinaryNode padreNodo = node.parent;
+ 			boolean referenciaPadre = hijoN(node);
+
+	 		node.parent = node.right;
+	 		node = node.parent;
+	 		node.parent.right = node.left;
+	 		node.left = node.parent;
+	 		node.parent = padreNodo;
+	 		if(referenciaPadre)
+	 			node.parent.right = node;
+	 		if(!referenciaPadre)
+	 			node.parent.left = node;
+
+	 		/*Recalculando las alturas de los nodos que cambian su altura*/
+	 		node.alturaNodo = altura(node);
+	 		node.left.alturaNodo = altura(node.left);
+	 		node.left.right.alturaNodo = altura(node.left.right);
+	 	}
+	 	if(node.parent == null){
+
+	 		node.parent = node.right;
+	 		node = node.parent;
+	 		node.parent.right = node.left;
+	 		node.left = node.parent;
+	 		node.parent = null;
+
+	 		/*Recalculando las alturas de los nodos que cambian su altura*/
+	 		node.alturaNodo = altura(node);
+	 		node.left.alturaNodo = altura(node.left);
+	 		node.left.right.alturaNodo = altura(node.left.right);
+	 	}
+ 	}
+
+ 	/**
+ 	 * Método auxiliar que rebalancea a la izquierda, en el caso1. El nodo que le pasamos va a rotar a la derecha.
+ 	 * @param node el nodo a rotar hacia la izquierda.
+ 	 */
+ 	public void rotaIzquierda(BinaryNode node){
+ 		if(node.parent != null){
+
+ 			BinaryNode padreNodo = node.parent;
+ 			boolean referenciaPadre = hijoN(node);
+
+	 		node.parent = node.left;
+	 		node = node.parent;
+	 		node.parent.left = node.right;
+	 		node.right = node.parent;
+	 		node.parent = padreNodo;
+	 		if(referenciaPadre)
+	 			node.parent.right = node;
+	 		if(!referenciaPadre)
+	 			node.parent.left = node;
+
+	 		/*Recalculando las alturas de los nodos que cambian su altura*/
+	 		node.alturaNodo = altura(node);
+	 		node.right.alturaNodo = altura(node.right);
+	 		node.right.left.alturaNodo = altura(node.right.left);
+ 		}
+ 		if(node.parent == null){
+
+ 			node.parent = node.left;
+	 		node = node.parent;
+	 		node.parent.left = node.right;
+	 		node.right = node.parent;
+	 		node.parent = null;
+
+	 		/*Recalculando las alturas de los nodos que cambian su altura*/
+	 		node.alturaNodo = altura(node);
+	 		node.right.alturaNodo = altura(node.right);
+	 		node.right.left.alturaNodo = altura(node.right.left);
+ 		}
+ 	}
+
+ 	/**
+ 	 * Método auxiliar que te dice si un nodo es la hijo izquierdo o derecho de su padre.
+	 * @param node el nodo a examinar
+	 * @return True -> hijo derecho / False -> hijo izquierdo
+	 */
+ 	public boolean hijoN(BinaryNode node){
+ 		BinaryNode padre = node.parent;
+ 		return padre.right == node;
+ 	}
+
+ 	/**
+ 	 * Inserta un nuevo nodo.
+ 	 * @param e el elemento del nodo
+ 	 * @param k la clave del nodo
+ 	 */
  	public void insert(T e, K k){
 		//Si el árbol es vacío.
 		if(root == null){
 			root = new BinaryNode(k, e, null);
+			root.alturaNodo = 0;
 			return;
 		}
 
 		BinaryNode insertado = this.insertAux(root, k, e);
+		/*Cada que se inserte un nuevo nodo, éste tendrá altura 0*/
+		insertado.alturaNodo = 0;
 
-		rebalancea(insertado);
+		rebalancea(insertado.parent); //Comienza a rebalancear el árbol desde el nodo insertado
 	}
 
 	/**
-	 * 
+	 * Método auxiliar que ayuda a insertar un Nodo, dependiendo de su clave. Si es mayor inserta en la derecha, si es menor inserta en la izquierda.
+	 * @param actual el nodo con el que se va a comparar la llave, para decidir en que lado va a ir bajando (izquierda si es menor, derecha si es mayor)
+	 * @param key la llave del nodo a insertar
+	 * @param e el elemento del nodo a insertar
+	 * @return el nodo insertado
 	 */
 	private BinaryNode insertAux(BinaryNode actual, K key, T e){
 		if(key.compareTo(actual.key) < 0){ //La clave es menor.
@@ -98,6 +234,11 @@ package fciencias.edatos.searchEngine;
 		}
 	}
 
+	/**
+	 * Elimina un nodo
+	 * @param k la clave del nodo que queremos eliminar
+	 * @return el elemento del nodo eliminado
+	 */
 	public T delete(K k){
 		//Obtenemos el nodo que queremos eliminar.
 		BinaryNode eliminado = super.retrieveAux(root, k);
@@ -138,6 +279,7 @@ package fciencias.edatos.searchEngine;
 			padre.right = eliminado;
 
 		rebalancea(eliminado.parent);
+
 		return regreso;
 	}
  }

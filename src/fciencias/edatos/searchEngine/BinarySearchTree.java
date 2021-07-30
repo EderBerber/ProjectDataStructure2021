@@ -2,8 +2,9 @@ package fciencias.edatos.searchEngine;
 
 /**
 * Implementación de un árbol binario de busqueda.
-* @author Emmanuel Cruz Hernández.
-* @version 2.0 Julio 2021.
+* @author Berber Gutiérrez Eder Samuel
+* @author Martínez Pardo Esaú
+* @version 3.0 Julio 2021.
 * @since Estructuras de Datos 2021-2.
 */
 public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearchTree<K, T>{
@@ -56,9 +57,12 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 	}
 
 	/**
-	 * 
+	 * Método auxiliar que regresa el nodo si existe.
+	 * @param actual el nodo a buscar
+	 * @param k la clave
+	 * @return el nodo encontrado si se encuentra, null si no se encuentra.
 	 */
-	private BinaryNode retrieveAux(BinaryNode actual, K k){
+	public BinaryNode retrieveAux(BinaryNode actual, K k){
 		if(actual == null) //Es cuando la clave k no se encuentra.
 			return null;
 		//Cuando las clases son iguales.
@@ -83,7 +87,11 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 	}
 
 	/**
-	 * 
+	 * Método auxiliar que ayuda a insertar un Nodo, dependiendo de su clave. Si es mayor inserta en la derecha, si es menor inserta en la izquierda.
+	 * @param actual el nodo con el que se va a comparar la llave, para decidir en que lado va a ir bajando (izquierda si es menor, derecha si es mayor)
+	 * @param key la llave del nodo a insertar
+	 * @param e el elemento del nodo a insertar
+	 * @return el nodo insertado
 	 */
 	private void insertAux(BinaryNode actual, K key, T e){
 		if(key.compareTo(actual.key) < 0){ //La clave es menor.
@@ -160,7 +168,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 	 * @param actual el nodo actual.
 	 * @return el nodo con clave menor a partir del actual.
 	 */
-	private BinaryNode findMin(BinaryNode actual){
+	public BinaryNode findMin(BinaryNode actual){
 		if(actual == null)
 			return null;
 
@@ -183,7 +191,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 	 * @param actual el nodo actual.
 	 * @return el nodo con clave mayor a partir del actual.
 	 */
-	private BinaryNode findMax(BinaryNode actual){
+	public BinaryNode findMax(BinaryNode actual){
 		if(actual == null)
 			return null;
 
