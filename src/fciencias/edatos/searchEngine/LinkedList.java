@@ -88,7 +88,10 @@ public class LinkedList<T> implements TDALinkedList<T>{
             System.out.println("Fuera de rango");
             return;
         }
-            
+        if(e == null){
+            System.out.println("No hay nada para insertar.");
+            return;
+        }
 
         Nodo nuevo = new Nodo(e);
 
@@ -218,6 +221,8 @@ public class LinkedList<T> implements TDALinkedList<T>{
         if(tamanio == 0){
             System.out.println("La lista es vacía.");
         }
+        if(this.size() == 0)
+            return;
         Nodo iterador = cabeza;
  		for (int i = 0; i<size(); i++) {
  			System.out.println(iterador.elemento);
@@ -230,6 +235,8 @@ public class LinkedList<T> implements TDALinkedList<T>{
      * @return la misma lista, pero de reversa.
  	 */
  	public LinkedList reversa(){
+        if(this.size() == 0)
+            return null;
  		LinkedList reversa = new LinkedList();
  		Nodo iterador = cabeza;
  		for (int i = 0; i<tamanio; i++) {
