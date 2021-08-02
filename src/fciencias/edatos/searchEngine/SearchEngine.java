@@ -11,7 +11,7 @@ import java.lang.Math;
  * @version 3.0 Julio 2021
  * @since proyecto final, Estructuras de Datos 2021-2
  */
-public class SearchEngine<K extends Comparable, T> extends BinarySearchTree<K, T>{
+public class SearchEngine<K extends Comparable, T>{
 
 	/* Ruta en donde se encuentran los archivos */
 	public static String rutaArchivos;
@@ -122,24 +122,29 @@ public class SearchEngine<K extends Comparable, T> extends BinarySearchTree<K, T
 	public BinarySearchTree toBST(String cadena, String limite){
 		if(cadena == null)
 			return null;
+		//cadena = cadena.replaceAll("^\\s*", " ");
+		cadena = cadena.trim();
+		BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
 		int posicion = 0;
 		int i = 0;
 		int num = 0;
-		BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
+		
 		for (int j=0; j<cadena.length(); j++) {
 			if(cadena.charAt(j) == limite.charAt(0))
 				num++;
 		}
-		while(i < num){
+		do{
 			posicion = cadena.indexOf(limite);
 			String palabra = cadena.substring(0, posicion);
 			cadena = cadena.substring(posicion+1);
-			if(arbol.retrieve(palabra) != null)
-				arbol.insert(arbol.delete(palabra)+1, palabra);
+
+			if(arbol.retrieve(palabra) != null){
+				arbol.actualiza(palabra, arbol.retrieve(palabra)+1);
+			}
 			else
 				arbol.insert(1, palabra);
 			i++;
-		}
+		}while(i < num);
 		return arbol;
 	}
 
@@ -231,6 +236,18 @@ public class SearchEngine<K extends Comparable, T> extends BinarySearchTree<K, T
 		return 0.0;
 	}
 
+	/**
+	 * Método que convierte un árbol binario de búsqueda en una lista.
+	 * @param root la raíz del árbol binario de búsqueda a convertir.
+	 * @param lista una lista vacía creada antes de llamar al método, para rellenarla con los elementos del árbol antes dado.
+	 */
+	public void treeToList(BinarySearchTree.BinaryNode root, LinkedList<String> lista){
+		if(root == null)
+			return;
+		lista.add(0, root.element.toString());
+		treeToList(root.right, lista);
+		treeToList(root.left, lista);
+	}
 
 	public static void main(String[] args) {
 		SearchEngine u = new SearchEngine();
@@ -241,10 +258,21 @@ public class SearchEngine<K extends Comparable, T> extends BinarySearchTree<K, T
 		/*for (int i = 0; i<prueba.length; i++) {
 			System.out.println(prueba[i]);
 		}*/
-		String nuevo = "Hola mundo cruel";
-		BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
-		u.toBST(nuevo, " ");
-		//BinaryNode actual = new BinaryNode();
-		System.out.println(arbol.root.element);
+		String nuevo = "Hola Hola mundo cruel mundo mundo jejejeje sam sam ";
+		//BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
+		/*arbol.insert(20,"Hola");
+		arbol.insert(30,"mundo");
+		arbol.insert(84,"cruel");
+		arbol.insert(28,"jeje");*/
+		//u.toBST(nuevo, " ");
+		//arbol.insert(1, "hola");
+		//BinarySearchTree.BinaryNode actual = arbol.root;
+		//arbol.preorden();
+		BinarySearchTree arbol = u.toBST(nuevo, " ");
+		//System.out.println(arbol.root.element);
+		//if(arbol.root == null)
+		LinkedList<String> lista = new LinkedList<>();
+		u.treeToList(arbol.root, lista);
+		lista.muestra();
 	}
 }

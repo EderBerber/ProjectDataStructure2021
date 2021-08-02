@@ -42,6 +42,13 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 			this.element = element;
 			this.parent = parent;
 		}
+
+		/*
+		*
+		*/
+		public void setElement(T element){
+			this.element = element;
+		}
 	}
 
 	/** Raíz del árbol. */
@@ -157,6 +164,36 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 		return regreso;
 	}
 
+	/**
+	 * Método que elimina un árbol.
+	 */
+	public void deleteComplete(){
+
+		while(root.right != null){
+			BinaryNode maximo = findMax(root);
+			if(maximo.left != null)
+				maximo = maximo.left;
+			BinaryNode padre = maximo.parent;
+			T temporal = maximo.element;
+			if(padre.left == maximo)
+				padre.left = null;
+			else
+				padre.right = null;
+		}
+		while(root.left != null){
+			BinaryNode minimo = findMin(root);
+			if(minimo.right != null)
+				minimo = minimo.right;
+			BinaryNode padre = minimo.parent;
+			T temporal = minimo.element;
+			if(padre.right == minimo)
+				padre.right = null;
+			else
+				padre.left = null;
+		}
+		root = null;
+	}
+
 	@Override
 	public T findMin(){
 		BinaryNode min = findMin(root);
@@ -255,6 +292,29 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 		preordenAux(actual.right);	//Visitar el hijo derecho.
 		System.out.println(actual.element);	//Visitar la raíz
 
+	}
+
+	/**
+	 * Método que actualiza un elemento de un nodo por otro.
+	 * @param k la clave del nodo
+	 * @param e el elemento del nodo
+	 */
+	public void actualiza(K k, T e){
+		BinaryNode nodo = retrieveNodo(k);
+		nodo.setElement(e);
+	}
+
+	/**
+	 * Método que regresa un nodo buscado
+	 * @param k la clave del nodo
+	 * @return el nodo buscado 
+	 */
+	public BinaryNode retrieveNodo(K k){
+		BinaryNode buscado = retrieveAux(root, k);
+		if(buscado == null)
+			return null;
+		else
+			return buscado;
 	}
 
 	public static void main(String[] args) {
