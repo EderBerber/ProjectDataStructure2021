@@ -13,27 +13,64 @@ import java.lang.Math;
  */
 public class SearchEngine<K extends Comparable, T>{
 
+	/**
+	 * Clase que simula la Caché.
+	 */
+	public static class Cache<T>{
+ 		/*Atributo de clase*/
+ 		static LinkedList lista;
+
+ 		/**
+ 		 * Método que agregue datos a una lista
+ 		 * @param elemento el elemento a agregar a una lista
+ 		 */
+ 		public LinkedList agregaCache(T elemento){
+ 			LinkedList listaNueva = new LinkedList();
+ 			listaNueva.add(0, elemento);
+ 			return listaNueva;
+ 		}
+
+ 		/**
+ 		 * Agrega un elemento a una lista
+ 		 * @param lista la lista a agregar
+ 		 * @param elemento el elemento a agregar
+ 		 * @param posicion la posición en la cual se va a agregar
+ 		 */
+ 		public void agregaLista(LinkedList lista, T elemento, int posicion){
+ 			lista.add(posicion, elemento);
+ 			return;
+ 		}
+ 	}
+
 	/* Ruta en donde se encuentran los archivos */
 	public static String rutaArchivos;
 	/* Historial de búsquedas */
 	public static LinkedList historial;
 	/* Valores de TF-IDF de cada archivo. Cada casilla es un archivo */
 	public static Double[] listaValores;
-	/*Variable estática que solo te ayuda a llamar a los métodos en toda la clase.*/
-	//public static SearchEngine helper = new SearchEngine();
-	//String[] void caché = new String[10]; LinkedList
-
-
+	/* Caché */
+	public static Cache<LinkedList>[] cache = new Cache[10];
 
 	/**
 	 * Método que almacena la caché.
-	 * @param arregloCache el arreglo con la caché a buscar.
-	 * @return el arreglo de cadenas
-	 *
-	public boolean buscarCache(String[] arregloCache){
-		caché = new String[10];
-		return true;
-	}*/
+	 * @param lista la lista a almacenar
+	 * @param busqueda la busqueda hecha que retornó la lista con los resultados
+	 */
+	public void llenaCache(LinkedList lista, String busqueda){
+		if(lista.size() == 0)
+            return;
+		Cache objeto = new Cache();
+		for (int i = 0; i<cache.length; i++) {
+			if(cache[i] == null){
+				cache[i].lista = objeto.agregaCache(busqueda);
+				cache[i].lista = cache[i].lista.concatena(lista);
+				return;
+			}
+		}
+		cache[0].lista = objeto.agregaCache(busqueda);
+		cache[0].lista = cache[0].lista.concatena(lista);
+		return;
+	}
 
 	/**
      * Método auxiliar que quita acentos en el idioma español (á, é, í, ó, ú, ü), y algunos otros caracteres como (, . : ; ¿ ? ¡ !) de una cadena.
@@ -129,12 +166,12 @@ public class SearchEngine<K extends Comparable, T>{
 		int i = 0;
 		int num = 0;
 		
-		for (int j=0; j<cadena.length(); j++) {
+		for (int j=0; j<cadena.length(); j++) {	//Te dice cuántas palabras tendremos, y cuantas iteraciones vamos a hacer.
 			if(cadena.charAt(j) == limite.charAt(0))
 				num++;
 		}
-		do{
-			posicion = cadena.indexOf(limite);
+		do{		//Iterando en la cadena y agregando las palabras al árbol.
+			posicion = cadena.indexOf(limite);	
 			String palabra = cadena.substring(0, posicion);
 			cadena = cadena.substring(posicion+1);
 
@@ -154,7 +191,7 @@ public class SearchEngine<K extends Comparable, T>{
 	 * @param nombreArchivo el nombre del archivo el cuál será convertido a un arreglo de cadenas.
 	 * @return el árbol binario de búsqueda con todas las palabras del archivo.
 	 */
-	public String[] arregloArchivo(String nombreArchivo){
+	public BinarySearchTree arregloArchivo(String nombreArchivo){
 		/*En el programa, al inicio se pide la ruta. Ésta será la misma en todo el programa (a menos que se decida cambiarla),
 		y la ruta se va a almacenar en la variable estática de la clase "rutaArchivos".*/
 		String ruta = rutaArchivos+"/"+nombreArchivo;
@@ -173,35 +210,33 @@ public class SearchEngine<K extends Comparable, T>{
 				}
 			}
 			nuevo.close();
-			/*Tenemos un arreglo con todas las palabras del archivo.*/
-			String[] arregloPalabras = palabras.split(" ");	//INTENTAR SUSITUIR .split() POR UNO QUE LO ALMACENE EN UN BST, ES MEJOR PARA EL getTF()
-			return arregloPalabras;
+			/*Tenemos un árbol binario de búsqueda con todas las palabras del archivo.*/
+			BinarySearchTree arbolPalabras = toBST(palabras, " ");
+			return arbolPalabras;
 		}
 		catch(IOException e) {
 			System.out.println("No se encontró el archivo.");
-			return new String[0];	//Regresa un arreglo vacío, pues es lo que regresa el método.
+			BinarySearchTree noEncontrado = new BinarySearchTree();
+			return noEncontrado;	//Regresa un arbol vacío.
 		}
 	}
 
 	/**
 	 * Método que calcula el TF de una palabra.
 	 * @param busquedaP la palabra la cual se regresará el TF.
-	 * @param archivo el arreglo en donde están todas las palabras del archivo.
+	 * @param archivo el árbol en donde están todas las palabras del archivo.
 	 * @return el TF de esa palabra en el archivo seleccionado.
 	 */
-	public double getTF(String busquedaP, String[] archivo){
+	public double getTf(String busquedaP, BinarySearchTree archivo){
 		/*Poniendo a la busqueda en minúsculas y quitandole acentos y caracteres especiales.*/
 		busquedaP = quitaAcentos(busquedaP);
 		busquedaP = busquedaP.toLowerCase();
-		int contador = 0;
-		/*Recorriendo el arreglo en el que se va a buscar cuantas veces se repite la palabra busquedaP*/
-		for (int i = 0; i<archivo.length; i++) {
-			if(archivo[i].equals(busquedaP))
-				contador++;	//Se va aumentando el contador cada vez que encuentre la palabra.
-		}
+		int frecuencia = 0;
+		if(archivo.retrieve(busquedaP) != null)
+			frecuencia = (Integer) archivo.retrieveNodo(busquedaP).element;
 		/*Si encontró al menos una vez la palabra, entonces va a calcular el TF con la fórmula dada. En caso de que no haya encontrado nada, regresa 0.*/
-		if(contador > 0)
-			return (Math.log(contador) / Math.log(2)) + 1;
+		if(frecuencia > 0)
+			return (Math.log(frecuencia) / Math.log(2)) + 1;	//Calculando la fórmula log2(frecuencua) + 1
 		return 0;
 	}
 
@@ -212,28 +247,94 @@ public class SearchEngine<K extends Comparable, T>{
 	 * @return el IDF de la palabra en los archivos.
 	 */
 	public double getIDF(String busquedaP, LinkedList listaArchivos){
+		if(listaArchivos.size() == 0)
+			return 0.0;
 		/*Poniendo a la busqueda en minúsculas y quitandole acentos y caracteres especiales.*/		
 		busquedaP = quitaAcentos(busquedaP);
 		busquedaP = busquedaP.toLowerCase();
-		Boolean[] arregloBooleano = new Boolean[listaArchivos.size()];	//Este arreglo nos va a ayudar a saber en cuántos archivos encontró la palabra.
+		int contador = 0;
 		String doc = "";
 		/*Buscando la palabra archivo por archivo. Primero, teniendo la ruta llamamos al método arregloArchivo(String doc) para obtenerla lista de todos
-		los archivos txt que hay. Después, convertimos cada archivo en una String e iteramos en éste para saber si se encuentra la palabra o no.
-		Posteriormente, vamos cambiando cada casilla del arreglo booleano por archivo, y así sabremos en cuales se encontró y en cuales no. Por último,
+		los archivos txt que hay. Después, convertimos cada archivo en una String e iteramos en éste para saber si se encuentra la palabra o no. Por último,
 		se calcula el IDF.*/
 		for (int i = 0; i<listaArchivos.size(); i++) {
-			doc = (String)listaArchivos.obten(i);
-			String[] file = arregloArchivo(doc);
-			for (int j = 0; j<file.length; j++) {
-				if(busquedaP.equals(file[j])){
-					arregloBooleano[i] = true;	//Si se encuentra, entonces esa casilla del arreglo se pone en true. AUN NO SE ACABA.
-					break;
-				}
-			}
+			doc = (String)listaArchivos.obten(i);	//Se obtiene el nombre del archivo i-ésimo
+			BinarySearchTree file = arregloArchivo(doc);	//Se crea el árbol con ese archivo
+			if(file.retrieve(busquedaP) != null)
+				contador++;
 			doc = "";
 		}
+		if(contador == 0)
+			return 0.0;
+		return (Math.log((listaArchivos.size()+1) / contador) / Math.log(2));	//Calculando la fórmula log2(N+1 / N)
+	}
 
-		return 0.0;
+	/**
+	 * Método que calcula el peso TF-IDF de todas las palabras de un archivo, y aplica la fórmula: suma el cuadrado de todos estos pesos y
+	 * le saca raíz cuadrada al resultado. 
+	 * @param arbol el arbol en donde están todas las palabras del archivo.
+	 * @param lista la lista de todos los archivos txt en la ruta específicada (Se obtiene con el método rutaArchivos()).
+	 * @return la parte del denominador de la división final para saber la similitud del archivo dado.
+	 */
+	public double calculaArchivo(BinarySearchTree arbol, LinkedList lista){
+		LinkedList<String> nuevo = new LinkedList<>();
+		nuevo.add(0, "root");	//Se añade una palabra para evitar NullPointerException. La palabra estará al final de la lista.
+		treeToList(arbol.root, nuevo);	//Se agregan los elementos de un árbol a una lista.
+		nuevo.elimina(nuevo.size());	//Se elimina el elemento que habíamos metido de más.
+		double sumando = 0.0;
+		double tfIdf = 0.0;
+		for (int i = 0; i<nuevo.size(); i++) {
+			LinkedList.Nodo iterador = nuevo.cabeza;
+			String busqueda = (String) iterador.elemento;
+			tfIdf = (getTf(busqueda, arbol))*(getIDF(busqueda, lista));	//Sacando el peso TF-IDF
+			double cuadrado = tfIdf * tfIdf;
+			sumando += cuadrado;	//Sumando los cuadrados de sus pesos TF-IDF
+			iterador = iterador.siguiente;
+		}
+		return Math.sqrt(sumando);	//Sé saca la raíz para completar la fórmula.
+	}
+
+	/**
+	 * Método que llena el arreglo que tenemos como atributo (listaValores), y éste almacena de cada archivo el valor de aplicar la formula para todas las 
+	 * palabras en un archivo: la raíz cuadrada de la suma de los pesos TF-IDF al cuadrado.
+	 */
+	public void palabrasArchivo(){
+		LinkedList lista = archivosRuta();	//Obteniendo la lista de los archivos txt de la ruta dada.
+		BinarySearchTree arbol;
+		double valor = 0.0;
+		for (int i = 0; i<lista.size(); i++) {
+			LinkedList.Nodo iterador = lista.cabeza;
+			String archivo = (String) iterador.elemento;
+			arbol = arregloArchivo(archivo);	//Creando el árbol binario de búsqueda del archivo.
+			valor = calculaArchivo(arbol, lista);	//Calculando el valor raíz cuadrada de la suma de los cuadrados de los pesos TF-IDF de las palabras de un archivo.
+			listaValores[i] = valor;	//Insertando en la i-ésima posición del arreglo, el valor de ese archivo
+		}
+		return;
+	}
+
+	/**
+	 * Método que calcula la similitud de una busqueda dada con un archivo.
+	 * @param busquedaP la busqueda que hace el usuario.
+	 * @param nombreArchivo el nombre del archivo.
+	 * @return la similitud de ese archivo con la busqueda dada.
+	 */
+	public double similitud(String busquedaP, String nombreArchivo){
+		BinarySearchTree arbol = arregloArchivo(nombreArchivo);	//Creando el árbol del archivo
+		LinkedList lista = archivosRuta();	//Lista de todos los archivos txt de la ruta dada
+		double totalContador = 0.0;
+		double tfIdf = 0.0;
+		String[] b = busquedaP.split(" ");	//Creando un arreglo llamadno b, que contiene las palabras del archivo
+		for (int i = 0; i<b.length; i++) {	//Iterando en el arreglo de las palabras
+			tfIdf = (getTf(b[i], arbol))*(getIDF(b[i], lista));	//Calculando el peso TD-IDF de las palabras
+			totalContador += tfIdf;	//Sumando todos los pesos TF-IDF
+		}
+		int contador = 0;
+		for (int j=0; j<lista.size(); j++) {	//Iterando para ver el número del archivo, y así encontrarlo en el arreglo listaValores
+			LinkedList.Nodo iterador = lista.cabeza;
+			if(!nombreArchivo.equals(iterador.elemento))	
+				contador++;
+		}
+		return (totalContador)/(listaValores[contador]);	//Aplicando la fórmula para calcular la similitud de una búsqueda con un archivo.
 	}
 
 	/**
@@ -244,21 +345,20 @@ public class SearchEngine<K extends Comparable, T>{
 	public void treeToList(BinarySearchTree.BinaryNode root, LinkedList<String> lista){
 		if(root == null)
 			return;
-		lista.add(0, root.element.toString());
-		treeToList(root.right, lista);
-		treeToList(root.left, lista);
+		lista.add(0, root.element.toString());	//Se va llenando la lista.
+		treeToList(root.right, lista);	//Itera en los elementos de la derecha de cada LinkedList.nodo.
+		treeToList(root.left, lista); 	//Itera en los elementos de la izquierda de cada nodo.
 	}
 
 	public static void main(String[] args) {
 		SearchEngine u = new SearchEngine();
 		rutaArchivos = "/home/samuel_berber/Documentos";
-		String[] prueba = u.arregloArchivo("archivo.txt");
 		//System.out.println("La longitud del archivo es: " + prueba.length);
-		//System.out.println("El TF de hola es: " + u.getTF("hola", prueba));
+		//System.out.println("El TF de hola es: " + u.getTf("hola", prueba));
 		/*for (int i = 0; i<prueba.length; i++) {
 			System.out.println(prueba[i]);
 		}*/
-		String nuevo = "Hola Hola mundo cruel mundo mundo jejejeje sam sam ";
+		String nuevo = "Hola Hola mundo cruel mundo mundo jejejeje sam sam ";	//A LA HORA DE LLAMAR, AGREGAR SOLO UN ESPACIO
 		//BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
 		/*arbol.insert(20,"Hola");
 		arbol.insert(30,"mundo");
