@@ -42,6 +42,14 @@ public class SearchEngine<K extends Comparable, T>{
  		}
  	}
 
+	/*Colores*/
+	public static final String RED = "\u001B[31m";
+	public static final String GREEN = "\u001B[32m";
+	public static final String YELLOW = "\u001B[33m";
+	public static final String PURPLE = "\u001B[35m";
+	public static final String CYAN = "\u001B[36m";
+	public static final String RESET = "\u001B[0m";
+
 	/* Ruta en donde se encuentran los archivos */
 	public static String rutaArchivos;
 	/* Historial de búsquedas */
@@ -70,6 +78,21 @@ public class SearchEngine<K extends Comparable, T>{
 		cache[0].lista = objeto.agregaCache(busqueda);
 		cache[0].lista = cache[0].lista.concatena(lista);
 		return;
+	}
+
+	/**
+	 * Método que dada una busqueda, la busca dentro de la caché. Si la encuentra dará el índice de la casilla en donde estuvo, y si no, regresa -1
+	 * @param busqueda la busqueda que se buscará en la caché
+	 * @return el índice de la casilla si lo encontró, y si no, regresa -1
+	 */
+	public int buscaCache(String busqueda){
+		for (int i = 0; i<cache.length; i++) {
+			if(cache[i] != null){
+				if(busqueda.equals(cache[i].lista.obten(0)))
+					return i;
+			}
+		}
+		return -1;
 	}
 
 	/**
@@ -159,7 +182,6 @@ public class SearchEngine<K extends Comparable, T>{
 	public BinarySearchTree toBST(String cadena, String limite){
 		if(cadena == null)
 			return null;
-		//cadena = cadena.replaceAll("^\\s*", " ");
 		cadena = cadena.trim();
 		BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
 		int posicion = 0;
@@ -338,6 +360,41 @@ public class SearchEngine<K extends Comparable, T>{
 	}
 
 	/**
+	 * Método que dada una búsqueda, te regresa una lista con (a lo más) 10 archivos, ordenados de mayor a menor relevancia.
+	 * @param busqueda la búsqueda que se realiza
+	 * @return una lista con archivos ordenados de mayor a menor relevancia.
+	 */
+	public LinkedList listaRelevantes(String busqueda){
+		LinkedList lista = archivosRuta();
+		LinkedList<String> nuevo = new LinkedList<>();
+		Double[] numeros = new Double[lista.size()];
+		double sim = 0.0;
+		for (int i = 0; i<lista.size(); i++) {
+			String nombreArchivo = (String) lista.obten(i);
+			sim = similitud(busqueda, nombreArchivo);
+			numeros[i] = sim;
+		}
+		double mayor = numeros[0];
+		int mayorEntero = 0;
+		for (int x = 0; x<10; x++) {
+			for (int y = 1; y<numeros.length; y++) {
+				if(numeros[y] > mayor){
+					mayor = numeros[y];
+					mayorEntero = y;
+				}
+			}
+			String palabra = (String) lista.obten(mayorEntero);
+			if(palabra == null)
+				continue;
+			nuevo.add(0, palabra);
+			numeros[mayorEntero] = 0.0;
+		}
+		nuevo = nuevo.reversa();
+		return nuevo;
+
+	}
+
+	/**
 	 * Método que convierte un árbol binario de búsqueda en una lista.
 	 * @param root la raíz del árbol binario de búsqueda a convertir.
 	 * @param lista una lista vacía creada antes de llamar al método, para rellenarla con los elementos del árbol antes dado.
@@ -350,29 +407,125 @@ public class SearchEngine<K extends Comparable, T>{
 		treeToList(root.left, lista); 	//Itera en los elementos de la izquierda de cada nodo.
 	}
 
+	/**
+	 * Método que voltea una cadena. Verifica que sea una ruta y no sea un tipo de archivo
+	 * @param ruta la supuesta ruta.
+	 */
+	public boolean isRoute(String ruta){
+		String reverse = new StringBuffer(ruta).reverse().toString();
+		int posicion = reverse.indexOf("/");
+		if(posicion	== -1)
+			return false;
+		String route = reverse.substring(0, posicion);
+		for (int i = 0; i<route.length(); i++) {
+			if(route.charAt(i) == '.')
+				return false;
+		}
+		return true;
+	}
+
 	public static void main(String[] args) {
 		SearchEngine u = new SearchEngine();
-		rutaArchivos = "/home/samuel_berber/Documentos";
-		//System.out.println("La longitud del archivo es: " + prueba.length);
-		//System.out.println("El TF de hola es: " + u.getTf("hola", prueba));
-		/*for (int i = 0; i<prueba.length; i++) {
-			System.out.println(prueba[i]);
-		}*/
-		String nuevo = "Hola Hola mundo cruel mundo mundo jejejeje sam sam ";	//A LA HORA DE LLAMAR, AGREGAR SOLO UN ESPACIO
-		//BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
-		/*arbol.insert(20,"Hola");
-		arbol.insert(30,"mundo");
-		arbol.insert(84,"cruel");
-		arbol.insert(28,"jeje");*/
-		//u.toBST(nuevo, " ");
-		//arbol.insert(1, "hola");
-		//BinarySearchTree.BinaryNode actual = arbol.root;
-		//arbol.preorden();
-		BinarySearchTree arbol = u.toBST(nuevo, " ");
-		//System.out.println(arbol.root.element);
-		//if(arbol.root == null)
-		LinkedList<String> lista = new LinkedList<>();
-		u.treeToList(arbol.root, lista);
-		lista.muestra();
+		Scanner sc = new Scanner(System.in);
+		int z = 0;
+
+		System.out.println(YELLOW + "    °***¡Bienvenido a éste motor de búsqueda, utilizando archivos!***°\n"+ CYAN +
+									"A continuación, te mostraré un menú, del cuál puedes seleccionar la opción que más te guste.");
+		System.out.println(GREEN + "Ingresa la ruta en la que estarán los archivos: " + YELLOW);
+		String ruta = sc.nextLine();
+		while(u.isRoute(ruta) == false){
+			if(!u.isRoute(ruta)){	
+				System.out.println(RED + "Error. No has ingresado una ruta. Ingrese una ruta correctamente." + YELLOW);
+				ruta = sc.nextLine();
+			}
+		}
+		rutaArchivos = ruta;
+		u.palabrasArchivo();
+	
+    	do{
+		    try{	
+		    	System.out.println(YELLOW + "[1]" + CYAN + " Búsqueda." + GREEN + "Proporciona una búsqueda, y posteriormente te regresará los 10 archivos más relevantes de acuerdo a tu búsqueda.");
+	            System.out.println(YELLOW + "[2]" + CYAN + " Historial." + GREEN + "Consulta tu historial de búsquedas recientes.");
+	            System.out.println(YELLOW + "[3]" + CYAN + " Cambiar ruta." + GREEN + " Cambia la ruta de donde están los archivos.");
+	            System.out.println(YELLOW + "[4]" + CYAN + " Archivos txt." + GREEN + " Muestra los archivos txt que hay en la carpeta de la ruta dada.");
+	            System.out.println(YELLOW + "[0]" + CYAN + " Salir del programa." + GREEN + " ");
+	            System.out.print("\n\n °¿Que opción eliges? " + YELLOW);
+	    		z = sc.nextInt();
+	    		if(z < 0)
+					z = 2147483647;
+				switch(z){
+		    		case 0:
+						System.out.println(CYAN + "¡¡Espero haya sido de su agrado, estimado usuario!!" + YELLOW + "\n        ***Hasta la próxima***");
+						break;
+		    		case 1:
+		    			System.out.println(CYAN + "\nEstimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Búsqueda\"");
+		    			System.out.print(CYAN + "Ingresa la búsqueda que harás: " + YELLOW);
+		    			sc.nextLine();
+		    			String txt = sc.nextLine();
+						while(txt.length() > 200){
+							if(txt.length() > 200){	
+								System.out.println(RED + "Error. Tú búsqueda sobrepasa los 200 palabras. Ingrese una nueva búsqueda." + YELLOW);
+								txt = sc.nextLine();
+							}
+						}
+						historial.add(0, txt);
+						LinkedList archivosRelevantes;
+						int indice = u.buscaCache(txt);
+						if(indice != -1)
+							archivosRelevantes = cache[indice].lista;
+						else{
+							archivosRelevantes = u.listaRelevantes(txt);
+							if(archivosRelevantes == null){
+								System.out.println(RED + "No se encontró ningún archivo relevante con su búsqueda." + RESET);
+								break;
+							}
+							u.llenaCache(archivosRelevantes, txt);
+						}
+						System.out.println(CYAN + "Los " + archivosRelevantes.size() + " archivos más relevantes son: " + YELLOW);
+						archivosRelevantes.muestra();
+		    			break;
+		    		case 2:
+		    			System.out.println(CYAN + "\nEstimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Historial\"");
+		    			System.out.print(CYAN + "El historial de búsquedas recientes es: " + YELLOW);
+		    			historial.muestra();
+		    			System.out.println(RESET);
+		    			break;
+		    		case 3:
+		    			System.out.println(GREEN + "\nEstimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Cambiar ruta\"");
+		    			System.out.println(GREEN + "Ingresa la nueva ruta en la que estarán los archivos: " + YELLOW);
+						String ruta2 = sc.nextLine();
+						while(u.isRoute(ruta2) == false){
+							if(!u.isRoute(ruta2)){	
+								System.out.println(RED + "Error. No has ingresado una ruta. Ingrese una ruta correctamente." + YELLOW);
+								ruta2 = sc.nextLine();
+							}
+						}
+						rutaArchivos = ruta2;
+						u.palabrasArchivo();
+						for (int i = 0; i<cache.length; i++) {
+							cache[i].lista.limpia();
+						}
+		    			break;
+		    		case 4:
+		    			System.out.println(GREEN + "\nEstimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Archivos txt\"");
+		    			LinkedList arch = u.archivosRuta();
+		    			System.out.print(CYAN + "Usted tiene " + YELLOW + arch.size() + CYAN+ " archivos.");
+		    			System.out.print(CYAN + "Los archivos txt que hay son: " + YELLOW);
+		    			arch.muestra();
+		    			break;
+		    		case 2147483647:
+						System.out.println(RED + "¡¡¡ERRROR!!! Estimado usuario, no hay métodos negativos.");
+						break;
+					default:
+						System.out.println(RED + "¡¡¡ERRROR!!! Estimado usuario, solo hay 4 operaciones.");
+						break;
+		    	}
+	    	}
+	    	catch(InputMismatchException ime){
+			System.out.println(RED + "\nNo ingresaste un número:(");
+			sc.nextLine();
+			z = 2;
+			}
+	    } while(z > 0);
 	}
 }
