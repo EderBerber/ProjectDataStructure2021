@@ -47,7 +47,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 	/** Raíz del árbol. */
 	public BinaryNode root;
 
-	
+	@Override
 	public T retrieve(K k){
 		BinaryNode buscado = retrieveAux(root, k);
 		if(buscado == null)
@@ -59,23 +59,25 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 	/**
 	 * Método auxiliar que regresa el nodo si existe.
 	 * @param actual el nodo a buscar
-	 * @param k la clave
+	 * @param k la clave a buscar
 	 * @return el nodo encontrado si se encuentra, null si no se encuentra.
 	 */
 	public BinaryNode retrieveAux(BinaryNode actual, K k){
 		if(actual == null) //Es cuando la clave k no se encuentra.
 			return null;
 		//Cuando las clases son iguales.
-		if(actual.key.compareTo(k) == 0)
-			return actual;
+		if(actual.key.compareTo(k) == 0){
+			if(k.equals(actual.key))
+				return actual;
+		}
 		if(k.compareTo(actual.key) < 0){ //Fue menor, buscamos en el izquierdo.
 			return retrieveAux(actual.left, k);
-		} else{	//Fue mayor, entonces busca en el derecho.
+		} else{		//Fue mayor, entonces busca en el derecho.
 			return retrieveAux(actual.right, k);	
 		}
 	}
 
-	
+	@Override
 	public void insert(T e, K k){
 		//Si el árbol es vacío.
 		if(root == null){
@@ -102,7 +104,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 			} else{
 				insertAux(actual.left, key, e);
 			}
-		} else{ //La clave es mayor.
+		} else{ 	//La clave es mayor.
 			if(actual.right == null){
 				BinaryNode agregado = new BinaryNode(key, e, actual);
 				actual.right = agregado;
@@ -113,7 +115,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 		}
 	}
 
-	
+	@Override
 	public T delete(K k){
 		//Obtenemos el nodo que queremos eliminar.
 		BinaryNode eliminado = retrieveAux(root, k);
@@ -155,7 +157,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 		return regreso;
 	}
 
-	
+	@Override
 	public T findMin(){
 		BinaryNode min = findMin(root);
 		if(min == null)
@@ -178,7 +180,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 		return min;
 	} 
 
-	
+	@Override
 	public T findMax(){
 		BinaryNode max = findMax(root);
 		if(max == null)
@@ -201,7 +203,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 		return max;
 	} 
 
-	
+	@Override
 	public void preorden(){
 		preordenAux(root);
 		return;
@@ -219,7 +221,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 
 	}
 
-	
+	@Override
 	public void inorden(){
 		inordenAux(root);
 		return;
@@ -237,7 +239,7 @@ public class BinarySearchTree<K extends Comparable, T> implements TDABinarySearc
 
 	}
 
-	
+	@Override
 	public void postorden(){
 		postordenAux(root);
 		return;

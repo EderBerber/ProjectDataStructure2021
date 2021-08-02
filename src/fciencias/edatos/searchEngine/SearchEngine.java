@@ -5,19 +5,24 @@ import java.util.InputMismatchException;
 import java.lang.Math;
 
 /**
- * Programa que simula un motor de búsqueda
+ * Programa que simula un motor de búsqueda. Dada una búsqueda, te muestra los 10 archivos más similares a tu busqueda.
  * @author Berber Gutiérrez Eder Samuel
  * @author Martínez Pardo Esaú
- * @version 2.0 Julio 2021
+ * @version 3.0 Julio 2021
  * @since proyecto final, Estructuras de Datos 2021-2
  */
-public class SearchEngine<T> extends DoubleLinkedList<T>{
+public class SearchEngine<K extends Comparable, T> extends BinarySearchTree<K, T>{
 
-	/*Variable que te indicará la ruta.*/
+	/* Ruta en donde se encuentran los archivos */
 	public static String rutaArchivos;
+	/* Historial de búsquedas */
+	public static LinkedList historial;
+	/* Valores de TF-IDF de cada archivo. Cada casilla es un archivo */
+	public static Double[] listaValores;
 	/*Variable estática que solo te ayuda a llamar a los métodos en toda la clase.*/
-	public static SearchEngine helper = new SearchEngine();
-	//String[] void caché = new String[10];
+	//public static SearchEngine helper = new SearchEngine();
+	//String[] void caché = new String[10]; LinkedList
+
 
 
 	/**
@@ -91,12 +96,13 @@ public class SearchEngine<T> extends DoubleLinkedList<T>{
 	/**
 	 * Método que te devuelve una lista de todos los archivos txt que hay en la carpeta de la ruta dada.
 	 * @param ruta la ruta de la carpeta en donde se encuentran los archivos.
-	 * @return un arreglo con el nombre de todos los archivos contenidos en la carpeta de la ruta dada.
+	 * @return una lista con el nombre de todos los archivos contenidos en la carpeta de la ruta dada.
 	 */
-	public DoubleLinkedList archivosRuta(String ruta){	//Mandar una excepción cuando la ruta sea a un archivo en específico.
+	public LinkedList archivosRuta(){	//Mandar una excepción cuando la ruta sea a un archivo en específico.
+		String ruta = rutaArchivos;
 		File file = new File(ruta);
 		String[] archivos = file.list();	//Muestra la lista de archivos que hay en una carpeta
-		DoubleLinkedList listaArchivos = new DoubleLinkedList();
+		LinkedList<String> listaArchivos = new LinkedList<>();
 
 		for (int i = 0; i<archivos.length; i++) {
 			String terminacion = archivos[i].substring(archivos[i].length()-4, archivos[i].length());	//Verifica que solo se tomen en cuenta los archivos txt
@@ -107,12 +113,41 @@ public class SearchEngine<T> extends DoubleLinkedList<T>{
 	}
 
 	/**
-	 * Método que convierte un arreglo en una lista doblemente ligada
+	 * Método que dado una cadena String, te devuelve un árbol binario de búsqueda.
+	 * Cada nodo contiene como elemento la frecuencia con la que esa misma palabra se repite en toda la cadena.
+	 * @param cadena la cadena a convertir en el árbol binario de búsqueda.
+	 * @param limite la cadena en donde va a hacer los cortes.
+	 * @return el árbol binario de búsqueda con las palabras de la cadena String.
+	 */
+	public BinarySearchTree toBST(String cadena, String limite){
+		if(cadena == null)
+			return null;
+		int posicion = 0;
+		int i = 0;
+		int num = 0;
+		BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
+		for (int j=0; j<cadena.length(); j++) {
+			if(cadena.charAt(j) == limite.charAt(0))
+				num++;
+		}
+		while(i < num){
+			posicion = cadena.indexOf(limite);
+			String palabra = cadena.substring(0, posicion);
+			cadena = cadena.substring(posicion+1);
+			if(arbol.retrieve(palabra) != null)
+				arbol.insert(arbol.delete(palabra)+1, palabra);
+			else
+				arbol.insert(1, palabra);
+			i++;
+		}
+		return arbol;
+	}
 
 	/**
-	 * Método que devuelve un arreglo con todas las palabras de un archivo.
+	 * Método que devuelve un árbol binario de búsqueda (Binary Search Tree) con todas las palabras de un archivo.
+	 * Cada nodo contiene la frecuencia con la que la palabra aparece en dicho archivo.
 	 * @param nombreArchivo el nombre del archivo el cuál será convertido a un arreglo de cadenas.
-	 * @return el arreglo con todas las palabras del archivo.
+	 * @return el árbol binario de búsqueda con todas las palabras del archivo.
 	 */
 	public String[] arregloArchivo(String nombreArchivo){
 		/*En el programa, al inicio se pide la ruta. Ésta será la misma en todo el programa (a menos que se decida cambiarla),
@@ -128,7 +163,7 @@ public class SearchEngine<T> extends DoubleLinkedList<T>{
 				linea = lector.readLine();
 				if(linea != null){
 					linea = linea.toLowerCase();
-					linea = helper.quitaAcentos(linea);
+					linea = quitaAcentos(linea);
 					palabras += linea + " ";
 				}
 			}
@@ -151,7 +186,7 @@ public class SearchEngine<T> extends DoubleLinkedList<T>{
 	 */
 	public double getTF(String busquedaP, String[] archivo){
 		/*Poniendo a la busqueda en minúsculas y quitandole acentos y caracteres especiales.*/
-		busquedaP = helper.quitaAcentos(busquedaP);
+		busquedaP = quitaAcentos(busquedaP);
 		busquedaP = busquedaP.toLowerCase();
 		int contador = 0;
 		/*Recorriendo el arreglo en el que se va a buscar cuantas veces se repite la palabra busquedaP*/
@@ -171,9 +206,9 @@ public class SearchEngine<T> extends DoubleLinkedList<T>{
 	 * @param listaArchivos la lista que contiene el nombre de los archivos.
 	 * @return el IDF de la palabra en los archivos.
 	 */
-	public double getIDF(String busquedaP, DoubleLinkedList listaArchivos){
+	public double getIDF(String busquedaP, LinkedList listaArchivos){
 		/*Poniendo a la busqueda en minúsculas y quitandole acentos y caracteres especiales.*/		
-		busquedaP = helper.quitaAcentos(busquedaP);
+		busquedaP = quitaAcentos(busquedaP);
 		busquedaP = busquedaP.toLowerCase();
 		Boolean[] arregloBooleano = new Boolean[listaArchivos.size()];	//Este arreglo nos va a ayudar a saber en cuántos archivos encontró la palabra.
 		String doc = "";
@@ -182,8 +217,8 @@ public class SearchEngine<T> extends DoubleLinkedList<T>{
 		Posteriormente, vamos cambiando cada casilla del arreglo booleano por archivo, y así sabremos en cuales se encontró y en cuales no. Por último,
 		se calcula el IDF.*/
 		for (int i = 0; i<listaArchivos.size(); i++) {
-			doc = (String)listaArchivos.get(i);
-			String[] file = helper.arregloArchivo(doc);
+			doc = (String)listaArchivos.obten(i);
+			String[] file = arregloArchivo(doc);
 			for (int j = 0; j<file.length; j++) {
 				if(busquedaP.equals(file[j])){
 					arregloBooleano[i] = true;	//Si se encuentra, entonces esa casilla del arreglo se pone en true. AUN NO SE ACABA.
@@ -206,5 +241,10 @@ public class SearchEngine<T> extends DoubleLinkedList<T>{
 		/*for (int i = 0; i<prueba.length; i++) {
 			System.out.println(prueba[i]);
 		}*/
+		String nuevo = "Hola mundo cruel";
+		BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
+		u.toBST(nuevo, " ");
+		//BinaryNode actual = new BinaryNode();
+		System.out.println(arbol.root.element);
 	}
 }
