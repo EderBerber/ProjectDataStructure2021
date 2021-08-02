@@ -179,6 +179,8 @@ public class SearchEngine<K extends Comparable, T>{
 	public LinkedList archivosRuta(){	//Mandar una excepción cuando la ruta sea a un archivo en específico.
 		String ruta = rutaArchivos;
 		File file = new File(ruta);
+		if(file.list() == null)
+			return null;
 		String[] archivos = file.list();	//Muestra la lista de archivos que hay en una carpeta
 		LinkedList<String> listaArchivos = new LinkedList<>();
 
@@ -187,8 +189,6 @@ public class SearchEngine<K extends Comparable, T>{
 			if(terminacion.equals(".txt"))
 				listaArchivos.add(0, archivos[i]);	//Creando la lista con puros archivos txt de esa carpeta
 		}
-		if(listaArchivos.size() == 0)
-			return null;
 		return listaArchivos;
 	}
 
@@ -477,7 +477,7 @@ public class SearchEngine<K extends Comparable, T>{
 	            System.out.println(YELLOW + "[3]" + CYAN + " Cambiar ruta." + GREEN + " Cambia la ruta de donde están los archivos.");
 	            System.out.println(YELLOW + "[4]" + CYAN + " Archivos txt." + GREEN + " Muestra los archivos txt que hay en la carpeta de la ruta dada.");
 	            System.out.println(YELLOW + "[0]" + CYAN + " Salir del programa." + GREEN + " ");
-	            System.out.print(YELLOW + "\n\n °¿Que opción eliges? " + YELLOW);
+	            System.out.println(YELLOW + "\n\n °¿Que opción eliges? " + YELLOW);
 	    		z = sc.nextInt();
 	    		if(z < 0)
 					z = 2147483647;
@@ -486,13 +486,14 @@ public class SearchEngine<K extends Comparable, T>{
 						System.out.println(CYAN + "¡¡Espero haya sido de su agrado, estimado usuario!!" + YELLOW + "\n        ***Hasta la próxima***");
 						break;
 		    		case 1:
-		    			System.out.println(CYAN + "\nEstimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Búsqueda\"");
+		    			System.out.println(CYAN + "\n°° Estimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Búsqueda\" °°");
 		    			System.out.println(CYAN + "Ingresa la búsqueda que harás: " + YELLOW);
-		    			sc.next();
+		    			sc.nextLine();
 		    			String txt = sc.nextLine();
 						while(txt.length() > 200){
 							if(txt.length() > 200){	
 								System.out.println(RED + "Error. Tú búsqueda sobrepasa los 200 palabras. Ingrese una nueva búsqueda." + YELLOW);
+								sc.nextLine();
 								txt = sc.nextLine();
 							}
 						}
@@ -513,8 +514,8 @@ public class SearchEngine<K extends Comparable, T>{
 						archivosRelevantes.muestra();
 		    			break;
 		    		case 2:
-		    			System.out.println(CYAN + "\nEstimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Historial\"");
-		    			System.out.print(CYAN + "El historial de búsquedas recientes es: " + YELLOW);
+		    			System.out.println(CYAN + "\n°° Estimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Historial\" °°");
+		    			System.out.println(CYAN + "El historial de búsquedas recientes es: " + YELLOW);
 		    			if(historial == null){
 		    				System.out.println(RED + "Aún no hay búsquedas recientes." + RESET);
 		    				break;
@@ -523,7 +524,7 @@ public class SearchEngine<K extends Comparable, T>{
 		    			System.out.println(RESET);
 		    			break;
 		    		case 3:
-		    			System.out.println(GREEN + "\nEstimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Cambiar ruta\"");
+		    			System.out.println(GREEN + "\n°° Estimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Cambiar ruta\" °°");
 		    			System.out.println(GREEN + "Ingresa la nueva ruta en la que estarán los archivos: " + YELLOW);
 						String ruta2 = sc.nextLine();
 						while(u.isRoute(ruta2) == false){
@@ -539,14 +540,13 @@ public class SearchEngine<K extends Comparable, T>{
 						}
 		    			break;
 		    		case 4:
-		    			System.out.println(GREEN + "\nEstimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Archivos txt\"");
-		    			//LinkedList arch = u.archivosRuta();
-		    			System.out.print(CYAN + "Usted tiene " + YELLOW + CYAN+ " archivos.");
+		    			System.out.println(GREEN + "\n°° Estimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Archivos txt\" °°");
 		    			LinkedList arch = u.archivosRuta();
 		    			if(arch == null){
 		    				System.out.println(RED + " No hay elementos en la lista." + RESET);
-		    				return;
+		    				break;
 		    			}
+		    			System.out.print(CYAN + "Usted tiene " + YELLOW + arch.size() + CYAN+ " archivos.");
 		    			System.out.println(CYAN + "Los archivos txt que hay son: " + YELLOW);
 		    			arch.muestra();
 		    			break;
