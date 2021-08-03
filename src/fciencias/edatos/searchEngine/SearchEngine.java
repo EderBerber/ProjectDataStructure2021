@@ -40,6 +40,8 @@ public class SearchEngine<K extends Comparable, T>{
  			lista.add(posicion, elemento);
  			return;
  		}
+
+
  	}
 
 	/*Colores*/
@@ -54,8 +56,6 @@ public class SearchEngine<K extends Comparable, T>{
 	public static String rutaArchivos = "";
 	/* Historial de búsquedas */
 	public static LinkedList historial = new LinkedList();;
-	/* Valores de TF-IDF de cada archivo. Cada casilla es un archivo */
-	public static Double[] listaValores;
 	/* Caché */
 	public static Cache<LinkedList>[] cache = new Cache[10];
 
@@ -74,6 +74,7 @@ public class SearchEngine<K extends Comparable, T>{
 	 * @param rutaArchivos la ruta que va a ser.
 	 */
 	public void setRuta(String rutaArchivos){
+		rutaArchivos = rutaArchivos.replaceAll("^/+|/+$|(/)+", "/");
 		this.rutaArchivos = rutaArchivos;
 	}
 
@@ -202,7 +203,10 @@ public class SearchEngine<K extends Comparable, T>{
 	public BinarySearchTree toBST(String cadena, String limite){
 		if(cadena == null)
 			return null;
-		cadena = cadena.trim();
+		cadena = cadena.replaceAll("\\t", " ");
+		cadena = cadena.replaceAll("\\n", " ");
+		cadena = cadena.replaceAll(" +| +|\t|\r|\n", " ");
+
 		BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
 		int posicion = 0;
 		int i = 0;
@@ -337,15 +341,16 @@ public class SearchEngine<K extends Comparable, T>{
 	}
 
 	/**
-	 * Método que llena el arreglo que tenemos como atributo (listaValores), y éste almacena de cada archivo el valor de aplicar la formula para todas las 
+	 * Método que llena un arreglo que almacena de cada archivo el valor de aplicar la formula para todas las 
 	 * palabras en un archivo: la raíz cuadrada de la suma de los pesos TF-IDF al cuadrado.
+	 * @return un arreglo de doubles, que tiene el resultado de cada archivo de la suma de los cuadrados y su raíz.
 	 */
-	public void palabrasArchivo(){
+	public Double[] palabrasArchivo(){
 		LinkedList lista = archivosRuta();	//Obteniendo la lista de los archivos txt de la ruta dada.
 		if(lista == null)
 			return;
 		BinarySearchTree arbol;
-		listaValores = new Double[lista.size()];
+		public Double[] listaValores = new Double[lista.size()];
 		double valor = 0.0;
 		for (int i = 0; i<lista.size(); i++) {
 			LinkedList.Nodo iterador = lista.cabeza;
@@ -354,7 +359,7 @@ public class SearchEngine<K extends Comparable, T>{
 			valor = calculaArchivo(arbol, lista);	//Calculando el valor raíz cuadrada de la suma de los cuadrados de los pesos TF-IDF de las palabras de un archivo.
 			listaValores[i] = valor;	//Insertando en la i-ésima posición del arreglo, el valor de ese archivo
 		}
-		return;
+		return listaValores;
 	}
 
 	/**
@@ -368,6 +373,7 @@ public class SearchEngine<K extends Comparable, T>{
 		LinkedList lista = archivosRuta();	//Lista de todos los archivos txt de la ruta dada
 		if(lista == null)
 			return 0.0;
+		Double[] arregloDenominador = palabrasArchivo();
 		double totalContador = 0.0;
 		double tfIdf = 0.0;
 		String[] b = busquedaP.split(" ");	//Creando un arreglo llamadno b, que contiene las palabras del archivo
@@ -376,12 +382,13 @@ public class SearchEngine<K extends Comparable, T>{
 			totalContador += tfIdf;	//Sumando todos los pesos TF-IDF
 		}
 		int contador = 0;
-		for (int j=0; j<lista.size(); j++) {	//Iterando para ver el número del archivo, y así encontrarlo en el arreglo listaValores
+		for (int j=0; j<lista.size(); j++) {	//Iterando para ver el número del archivo, y así encontrarlo en el arreglo lista
 			LinkedList.Nodo iterador = lista.cabeza;
 			if(!nombreArchivo.equals(iterador.elemento))	
 				contador++;
 		}
-		return (totalContador)/(listaValores[contador]);	//Aplicando la fórmula para calcular la similitud de una búsqueda con un archivo.
+		double denominador = (arregloDenominador[contador]);
+		return totalContador/denominador;	//Aplicando la fórmula para calcular la similitud de una búsqueda con un archivo.
 	}
 
 	/**
@@ -415,6 +422,8 @@ public class SearchEngine<K extends Comparable, T>{
 				continue;
 			nuevo.add(0, palabra);
 			numeros[mayorEntero] = 0.0;
+			mayor = numeros[0];
+			mayorEntero = 0;
 		}
 		nuevo = nuevo.reversa();
 		return nuevo;
@@ -490,11 +499,19 @@ public class SearchEngine<K extends Comparable, T>{
 		    			System.out.println(CYAN + "Ingresa la búsqueda que harás: " + YELLOW);
 		    			sc.nextLine();
 		    			String txt = sc.nextLine();
+		    			/*txt = txt.replaceAll("\\t", " ");
+						txt = txt.replaceAll("\\n", " ");
+						txt = txt.replaceAll(" +| +|\t|\r|\n", " ");*/
+		    			txt = txt + " ";
 						while(txt.length() > 200){
 							if(txt.length() > 200){	
 								System.out.println(RED + "Error. Tú búsqueda sobrepasa los 200 palabras. Ingrese una nueva búsqueda." + YELLOW);
 								sc.nextLine();
 								txt = sc.nextLine();
+								/*txt = txt.replaceAll("\\t", " ");
+								txt = txt.replaceAll("\\n", " ");
+								txt = txt.replaceAll(" +| +|\t|\r|\n", " ");*/
+								txt = txt + " ";
 							}
 						}
 						u.insertaHistorial(txt);
@@ -526,6 +543,7 @@ public class SearchEngine<K extends Comparable, T>{
 		    		case 3:
 		    			System.out.println(GREEN + "\n°° Estimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Cambiar ruta\" °°");
 		    			System.out.println(GREEN + "Ingresa la nueva ruta en la que estarán los archivos: " + YELLOW);
+						sc.nextLine();
 						String ruta2 = sc.nextLine();
 						while(u.isRoute(ruta2) == false){
 							if(!u.isRoute(ruta2)){	
@@ -535,9 +553,7 @@ public class SearchEngine<K extends Comparable, T>{
 						}
 						u.setRuta(ruta2);
 						u.palabrasArchivo();
-						for (int i = 0; i<cache.length; i++) {
-							cache[i].lista.limpia();
-						}
+						cache = new Cache[10];
 		    			break;
 		    		case 4:
 		    			System.out.println(GREEN + "\n°° Estimado usuario, has elegido la opción " + z + ":" + YELLOW + "\"Archivos txt\" °°");
