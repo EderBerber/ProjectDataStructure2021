@@ -82,6 +82,23 @@ public class LinkedList<T> implements TDALinkedList<T>{
     	return sinPrimero;
     }
 
+    /**
+     * Método que elimina los repetidos de una lista
+     * @return la nueva lista sin repetidos.
+     */
+    public void esRepetido(){
+        if(this == null){
+            return;
+        }
+        for (int i = 0; i<this.size(); i++) {
+            for (int j = 0; j<this.cola().size(); j++) {
+                if(this.obten(i) == this.obten(j)){
+                    this.elimina(j);
+                }
+            }
+        }
+    }
+
     @Override
     public void add(int indice, T e){
         if(indice < 0 || indice > size()){

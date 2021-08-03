@@ -313,31 +313,6 @@ public class SearchEngine<K extends Comparable, T>{
 	}
 
 	/**
-	 * Método que calcula el peso TF-IDF de todas las palabras de un archivo, y aplica la fórmula: suma el cuadrado de todos estos pesos y
-	 * le saca raíz cuadrada al resultado. 
-	 * @param arbol el arbol en donde están todas las palabras del archivo.
-	 * @param lista la lista de todos los archivos txt en la ruta específicada (Se obtiene con el método rutaArchivos()).
-	 * @return la parte del denominador de la división final para saber la similitud del archivo dado.
-	 */
-	public double calculaArchivo(BinarySearchTree arbol, LinkedList lista){
-		LinkedList<String> nuevo = new LinkedList<>();
-		nuevo.add(0, "root");	//Se añade una palabra para evitar NullPointerException. La palabra estará al final de la lista.
-		treeToList(arbol.root, nuevo);	//Se agregan los elementos de un árbol a una lista.
-		nuevo.elimina(nuevo.size());	//Se elimina el elemento que habíamos metido de más.
-		double sumando = 0.0;
-		double tfIdf = 0.0;
-		for (int i = 0; i<nuevo.size(); i++) {
-			LinkedList.Nodo iterador = nuevo.cabeza;
-			String busqueda = (String) iterador.elemento;
-			tfIdf = (getTf(busqueda, arbol))*(getIDF(busqueda, lista));	//Sacando el peso TF-IDF
-			double cuadrado = tfIdf * tfIdf;
-			sumando += cuadrado;	//Sumando los cuadrados de sus pesos TF-IDF
-			iterador = iterador.siguiente;
-		}
-		return Math.sqrt(sumando);	//Sé saca la raíz para completar la fórmula.
-	}
-
-	/**
 	 * Método que calcula la similitud de una busqueda dada con un archivo.
 	 * @param busquedaP la busqueda que hace el usuario.
 	 * @param nombreArchivo el nombre del archivo.
@@ -348,21 +323,12 @@ public class SearchEngine<K extends Comparable, T>{
 		LinkedList lista = archivosRuta();	//Lista de todos los archivos txt de la ruta dada
 		if(lista == null)
 			return 0.0;
-		Double[] listaValores = new Double[lista.size()];
-		double valor = 0.0;
-		for (int i = 0; i<lista.size(); i++) {
-			LinkedList.Nodo iterador = lista.cabeza;
-			String archivo = (String) iterador.elemento;
-			arbol = arregloArchivo(archivo);	//Creando el árbol binario de búsqueda del archivo.
-			valor = calculaArchivo(arbol, lista);	//Calculando el valor raíz cuadrada de la suma de los cuadrados de los pesos TF-IDF de las palabras de un archivo.
-			listaValores[i] = valor;	//Insertando en la i-ésima posición del arreglo, el valor de ese archivo
-		}
-		double totalContador = 0.0;
+		double numerador = 0.0;
 		double tfIdf = 0.0;
 		String[] b = busquedaP.split(" ");	//Creando un arreglo llamadno b, que contiene las palabras del archivo
 		for (int i = 0; i<b.length; i++) {	//Iterando en el arreglo de las palabras
 			tfIdf = (getTf(b[i], arbol))*(getIDF(b[i], lista));	//Calculando el peso TD-IDF de las palabras
-			totalContador += tfIdf;	//Sumando todos los pesos TF-IDF
+			numerador += tfIdf;	//Sumando todos los pesos TF-IDF
 		}
 		int contador = 0;
 		for (int j=0; j<lista.size(); j++) {	//Iterando para ver el número del archivo, y así encontrarlo en el arreglo lista
@@ -370,8 +336,19 @@ public class SearchEngine<K extends Comparable, T>{
 			if(!nombreArchivo.equals(iterador.elemento))	
 				contador++;
 		}
-		double denominador = (listaValores[contador]);
-		return totalContador/denominador;	//Aplicando la fórmula para calcular la similitud de una búsqueda con un archivo.
+		double sumando = 0.0;
+		tfIdf = 0.0;
+		for (int i = 0; i<lista.size(); i++) {
+			LinkedList.Nodo iterador = lista.cabeza;
+			String busqueda = (String) iterador.elemento;
+			tfIdf = (getTf(busqueda, arbol))*(getIDF(busqueda, lista));	//Sacando el peso TF-IDF
+			double cuadrado = tfIdf * tfIdf;
+			sumando += cuadrado;	//Sumando los cuadrados de sus pesos TF-IDF
+			iterador = iterador.siguiente;
+		}
+		double denominador = Math.sqrt(sumando);
+
+		return (numerador) / (denominador);	//Aplicando la fórmula para calcular la similitud de una búsqueda con un archivo.
 	}
 
 	/**
@@ -409,6 +386,7 @@ public class SearchEngine<K extends Comparable, T>{
 			mayorEntero = 0;
 		}
 		nuevo = nuevo.reversa();
+		nuevo.esRepetido();
 		return nuevo;
 
 	}
