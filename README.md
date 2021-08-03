@@ -11,6 +11,10 @@
 El proyecto consta de un tipo "Google", en el que tenemos un botón de búsqueda, escribimos una consulta y recibimos los 10 resultados de búsqueda más relevantes(buscando primero en la caché por si la consulta ya entró en el programa antes y ya fueron devueltos sus 10 archivos correspondientes y ya no recalcular otra vez) es decir,  en los que la o las palabras que escribimos en el botón de búsqueda hayan aparecido en el documento un número mayor de veces. Utilizamos un árbol Binario de Búsqueda. 
 TDABinarySearchTree con la descripción de los métodos característicos de un árbol binario de búsqueda. En la presentación [Árboles.pdf](https://github.com/EmmanuelCruz/MaterialED_2021-2/blob/master/10.%20%C3%81rboles%20generales/%C3%81rboles.pdf) se muestran algunos conceptos y representaciones de las operaciones.
 
+Tuvimos complicaciones a la hora de hacer la búsqueda, nos salía una excepción ArrayIndexOutOfBoundsException, por lo que estuvimos todo el día arreglando eso. 
+
+Nos repetía un archivo a la hora de la consulta. 
+
 ----
 
 ### Implementaciones
