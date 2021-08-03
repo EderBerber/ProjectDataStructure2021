@@ -203,9 +203,6 @@ public class SearchEngine<K extends Comparable, T>{
 	public BinarySearchTree toBST(String cadena, String limite){
 		if(cadena == null)
 			return null;
-		cadena = cadena.replaceAll("\\t", " ");
-		cadena = cadena.replaceAll("\\n", " ");
-		cadena = cadena.replaceAll(" +| +|\t|\r|\n", " ");
 
 		BinarySearchTree<String, Integer> arbol = new BinarySearchTree<>();
 		int posicion = 0;
@@ -341,28 +338,6 @@ public class SearchEngine<K extends Comparable, T>{
 	}
 
 	/**
-	 * Método que llena un arreglo que almacena de cada archivo el valor de aplicar la formula para todas las 
-	 * palabras en un archivo: la raíz cuadrada de la suma de los pesos TF-IDF al cuadrado.
-	 * @return un arreglo de doubles, que tiene el resultado de cada archivo de la suma de los cuadrados y su raíz.
-	 */
-	public Double[] palabrasArchivo(){
-		LinkedList lista = archivosRuta();	//Obteniendo la lista de los archivos txt de la ruta dada.
-		if(lista == null)
-			return;
-		BinarySearchTree arbol;
-		public Double[] listaValores = new Double[lista.size()];
-		double valor = 0.0;
-		for (int i = 0; i<lista.size(); i++) {
-			LinkedList.Nodo iterador = lista.cabeza;
-			String archivo = (String) iterador.elemento;
-			arbol = arregloArchivo(archivo);	//Creando el árbol binario de búsqueda del archivo.
-			valor = calculaArchivo(arbol, lista);	//Calculando el valor raíz cuadrada de la suma de los cuadrados de los pesos TF-IDF de las palabras de un archivo.
-			listaValores[i] = valor;	//Insertando en la i-ésima posición del arreglo, el valor de ese archivo
-		}
-		return listaValores;
-	}
-
-	/**
 	 * Método que calcula la similitud de una busqueda dada con un archivo.
 	 * @param busquedaP la busqueda que hace el usuario.
 	 * @param nombreArchivo el nombre del archivo.
@@ -373,7 +348,15 @@ public class SearchEngine<K extends Comparable, T>{
 		LinkedList lista = archivosRuta();	//Lista de todos los archivos txt de la ruta dada
 		if(lista == null)
 			return 0.0;
-		Double[] arregloDenominador = palabrasArchivo();
+		Double[] listaValores = new Double[lista.size()];
+		double valor = 0.0;
+		for (int i = 0; i<lista.size(); i++) {
+			LinkedList.Nodo iterador = lista.cabeza;
+			String archivo = (String) iterador.elemento;
+			arbol = arregloArchivo(archivo);	//Creando el árbol binario de búsqueda del archivo.
+			valor = calculaArchivo(arbol, lista);	//Calculando el valor raíz cuadrada de la suma de los cuadrados de los pesos TF-IDF de las palabras de un archivo.
+			listaValores[i] = valor;	//Insertando en la i-ésima posición del arreglo, el valor de ese archivo
+		}
 		double totalContador = 0.0;
 		double tfIdf = 0.0;
 		String[] b = busquedaP.split(" ");	//Creando un arreglo llamadno b, que contiene las palabras del archivo
@@ -387,7 +370,7 @@ public class SearchEngine<K extends Comparable, T>{
 			if(!nombreArchivo.equals(iterador.elemento))	
 				contador++;
 		}
-		double denominador = (arregloDenominador[contador]);
+		double denominador = (listaValores[contador]);
 		return totalContador/denominador;	//Aplicando la fórmula para calcular la similitud de una búsqueda con un archivo.
 	}
 
@@ -476,7 +459,6 @@ public class SearchEngine<K extends Comparable, T>{
 			}
 		}
 		u.setRuta(ruta);
-		u.palabrasArchivo();
 	
     	do{
 		    try{
@@ -499,18 +481,18 @@ public class SearchEngine<K extends Comparable, T>{
 		    			System.out.println(CYAN + "Ingresa la búsqueda que harás: " + YELLOW);
 		    			sc.nextLine();
 		    			String txt = sc.nextLine();
-		    			/*txt = txt.replaceAll("\\t", " ");
+		    			txt = txt.replaceAll("\\t", " ");
 						txt = txt.replaceAll("\\n", " ");
-						txt = txt.replaceAll(" +| +|\t|\r|\n", " ");*/
+						txt = txt.replaceAll(" +| +|\t|\r|\n", " ");
 		    			txt = txt + " ";
 						while(txt.length() > 200){
 							if(txt.length() > 200){	
 								System.out.println(RED + "Error. Tú búsqueda sobrepasa los 200 palabras. Ingrese una nueva búsqueda." + YELLOW);
 								sc.nextLine();
 								txt = sc.nextLine();
-								/*txt = txt.replaceAll("\\t", " ");
+								txt = txt.replaceAll("\\t", " ");
 								txt = txt.replaceAll("\\n", " ");
-								txt = txt.replaceAll(" +| +|\t|\r|\n", " ");*/
+								txt = txt.replaceAll(" +| +|\t|\r|\n", " ");
 								txt = txt + " ";
 							}
 						}
@@ -552,7 +534,6 @@ public class SearchEngine<K extends Comparable, T>{
 							}
 						}
 						u.setRuta(ruta2);
-						u.palabrasArchivo();
 						cache = new Cache[10];
 		    			break;
 		    		case 4:
